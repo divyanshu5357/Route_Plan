@@ -7,6 +7,7 @@ import streamlit as st
 import osmnx as ox
 import networkx as nx
 from shapely.geometry import Point
+from dotenv import load_dotenv
 try:
     import folium
     from folium import PolyLine, Marker
@@ -19,15 +20,12 @@ except Exception:
 
 from streamlit.components.v1 import html
 
-# -------------------------------
-# Config
-# -------------------------------
-# Hardcoded OpenCage API key (per user request). Replace with your key.
-OPENCAGE_KEY = "792b50d494e945bab9442e95fde1d09a"
+# Load environment variables from .env file
+load_dotenv()
 
-# Distance threshold (km) used to decide hybrid vs local routing
-DISTANCE_THRESHOLD_KM = 150.0
-
+# Configuration
+OPENCAGE_KEY = os.getenv("OPENCAGE_API_KEY", "")
+DISTANCE_THRESHOLD_KM = float(os.getenv("DISTANCE_THRESHOLD_KM", "150.0"))
 AIRPORTS_CSV = os.path.join(os.path.dirname(__file__), "airports.csv")
 
 # Haversine distance (meters)
@@ -41,14 +39,6 @@ def haversine(a, b):
     dlambda = math.radians(lon2 - lon1)
     x = math.sin(dphi/2)**2 + math.cos(phi1) * math.cos(phi2) * math.sin(dlambda/2)**2
     return 2 * R * math.asin(math.sqrt(x))
-
-# -------------------------------
-# Geocoding (OpenCage) with retries
-# -------------------------------
-OPENCAGE_KEY = "792b50d494e945bab9442e95fde1d09a"
-# Distance threshold (km) used to decide hybrid vs local routing
-# removed from UI as requested — keep here as a constant
-DISTANCE_THRESHOLD_KM = 150.0
 
 @st.cache_data
 def geocode_open_cage(place, key, max_retries=3, pause=1.0):
